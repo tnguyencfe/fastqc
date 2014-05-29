@@ -34,7 +34,7 @@ import uk.ac.babraham.FastQC.Graphs.LineGraph;
 import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 
-public class DuplicationLevel implements QCModule {
+public class DuplicationLevel implements QCModule<DuplicationLevel> {
 
 	private OverRepresentedSeqs overrepresentedModule;
 	private double [] counts = null;
@@ -193,6 +193,12 @@ public class DuplicationLevel implements QCModule {
 
 	public void reset() {
 		counts = null;
+	}
+
+	@Override
+	public void mergeResult(DuplicationLevel result) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

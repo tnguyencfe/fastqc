@@ -44,7 +44,7 @@ import uk.ac.babraham.FastQC.Graphs.LineGraph;
 import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 
-public class KmerContent implements QCModule {
+public class KmerContent implements QCModule<KmerContent> {
 
 	private Hashtable<String, Kmer> kmers = new Hashtable<String, Kmer>((int)Math.pow(4, MAX_KMER_SIZE));
 	private long gCount = 0;
@@ -559,6 +559,12 @@ public class KmerContent implements QCModule {
 		return null;
 			
 		}
+	}
+
+	@Override
+	public void mergeResult(KmerContent result) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

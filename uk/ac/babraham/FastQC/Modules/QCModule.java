@@ -26,10 +26,12 @@ import javax.swing.JPanel;
 import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 
-public interface QCModule {
+public interface QCModule<T> {
+	
+	public void mergeResult(T result);
 
 	public void processSequence(Sequence sequence);
-
+	
 	public JPanel getResultsPanel();
 	
 	public String name ();

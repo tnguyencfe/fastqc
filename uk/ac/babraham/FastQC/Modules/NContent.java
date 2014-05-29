@@ -33,7 +33,7 @@ import uk.ac.babraham.FastQC.Graphs.LineGraph;
 import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 
-public class NContent implements QCModule {
+public class NContent implements QCModule<NContent>{
 
 	public long [] nCounts = new long [0];
 	public long [] notNCounts = new long [0];
@@ -169,6 +169,12 @@ public class NContent implements QCModule {
 			sb.append(percentages[i]);
 			sb.append("\n");
 		}
+	}
+
+	@Override
+	public void mergeResult(NContent result) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

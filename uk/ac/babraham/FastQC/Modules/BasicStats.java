@@ -32,7 +32,7 @@ import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 import uk.ac.babraham.FastQC.Sequence.QualityEncoding.PhredEncoding;
 
-public class BasicStats implements QCModule {
+public class BasicStats implements QCModule<BasicStats> {
 
 	private String name = null;
 	private int actualCount = 0;
@@ -246,6 +246,12 @@ public class BasicStats implements QCModule {
 		return null;
 			
 		}
+	}
+
+	@Override
+	public void mergeResult(BasicStats result) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 

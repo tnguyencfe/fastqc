@@ -37,7 +37,7 @@ import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 import uk.ac.babraham.FastQC.Sequence.QualityEncoding.PhredEncoding;
 
-public class PerBaseQualityScores implements QCModule {
+public class PerBaseQualityScores implements QCModule<PerBaseQualityScores> {
 
 	public QualityCount [] qualityCounts = new QualityCount[0];
 	double [] means = null;
@@ -147,7 +147,7 @@ public class PerBaseQualityScores implements QCModule {
 		}
 		
 	}
-	
+		
 	public void reset () {
 		qualityCounts = new QualityCount[0];
 	}
@@ -264,6 +264,24 @@ public class PerBaseQualityScores implements QCModule {
 		
 	}
 
+	@Override
+	public void mergeResult(PerBaseQualityScores result) {
+		calculated = false;
+
+		QualityCount[] moreCounts = result.qualityCounts;
+		if (qualityCounts.length < moreCounts.length) {			
+			QualityCount [] qualityCountsNew = Arrays.copyOf(qualityCounts, moreCounts.length);
+			for (int i=qualityCounts.length;i<qualityCountsNew.length;i++) {
+				qualityCountsNew[i] = new QualityCount();	
+			}
+			qualityCounts = qualityCountsNew;
+		}
+				
+		for (int i=0;i<moreCounts.length;i++) {
+			qualityCounts[i].addValues(moreCounts[i]);
+		}
+		
+	}
 	
 	private class QualityCount {
 		private HashMap<Character, Long> counts = new HashMap<Character, Long>();
@@ -278,6 +296,18 @@ public class PerBaseQualityScores implements QCModule {
 			else {
 				counts.put(c, 1L);
 			}
+		}
+				
+		public void addValues(QualityCount moreCounts) {			
+			for(char c : moreCounts.counts.keySet()) {
+				totalCounts += moreCounts.counts.get(c);
+				if (counts.containsKey(c)) {
+					counts.put(c, counts.get(c)+moreCounts.counts.get(c));
+				}
+				else {
+					counts.put(c, moreCounts.counts.get(c));
+				}
+			}			
 		}
 		
 		public long getTotalCount () {
@@ -345,5 +375,8 @@ public class PerBaseQualityScores implements QCModule {
 		}
 		
 	}
+
+
+
 
 }

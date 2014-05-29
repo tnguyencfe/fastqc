@@ -33,7 +33,7 @@ import uk.ac.babraham.FastQC.Graphs.LineGraph;
 import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 
-public class PerBaseGCContent implements QCModule {
+public class PerBaseGCContent implements QCModule<PerBaseGCContent> {
 
 	public long [] gcCounts = new long [0];
 	public long [] atCounts = new long [0];
@@ -182,6 +182,12 @@ public class PerBaseGCContent implements QCModule {
 			sb.append(percentages[i]);
 			sb.append("\n");
 		}
+	}
+
+	@Override
+	public void mergeResult(PerBaseGCContent result) {
+		// TODO Auto-generated method stub
+		
 	} 
 
 }
