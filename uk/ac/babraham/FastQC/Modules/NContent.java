@@ -33,7 +33,7 @@ import uk.ac.babraham.FastQC.Graphs.LineGraph;
 import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 
-public class NContent implements QCModule<NContent>{
+public class NContent implements QCModule, QCModuleAggreg<NContent>{
 
 	public long [] nCounts = new long [0];
 	public long [] notNCounts = new long [0];
@@ -172,7 +172,7 @@ public class NContent implements QCModule<NContent>{
 	}
 
 	@Override
-	public void mergeResult(NContent result) {
+	public synchronized void mergeResult(NContent result) {
 		// TODO Auto-generated method stub
 		
 	}

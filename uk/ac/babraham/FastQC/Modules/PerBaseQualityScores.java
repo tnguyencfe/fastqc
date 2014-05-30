@@ -37,7 +37,7 @@ import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 import uk.ac.babraham.FastQC.Sequence.QualityEncoding.PhredEncoding;
 
-public class PerBaseQualityScores implements QCModule<PerBaseQualityScores> {
+public class PerBaseQualityScores implements QCModule, QCModuleAggreg<PerBaseQualityScores> {
 
 	public QualityCount [] qualityCounts = new QualityCount[0];
 	double [] means = null;
@@ -265,7 +265,7 @@ public class PerBaseQualityScores implements QCModule<PerBaseQualityScores> {
 	}
 
 	@Override
-	public void mergeResult(PerBaseQualityScores result) {
+	public synchronized void mergeResult(PerBaseQualityScores result) {
 		calculated = false;
 
 		QualityCount[] moreCounts = result.qualityCounts;

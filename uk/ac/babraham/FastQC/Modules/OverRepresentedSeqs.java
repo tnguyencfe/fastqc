@@ -38,7 +38,7 @@ import uk.ac.babraham.FastQC.Sequence.Sequence;
 import uk.ac.babraham.FastQC.Sequence.Contaminant.ContaminantHit;
 import uk.ac.babraham.FastQC.Sequence.Contaminant.ContaminentFinder;
 
-public class OverRepresentedSeqs implements QCModule<OverRepresentedSeqs> {
+public class OverRepresentedSeqs implements QCModule, QCModuleAggreg<OverRepresentedSeqs> {
 
 	protected HashMap<String, Integer>sequences = new HashMap<String, Integer>();
 	protected int count = 0;
@@ -319,7 +319,7 @@ public class OverRepresentedSeqs implements QCModule<OverRepresentedSeqs> {
 	}
 
 	@Override
-	public void mergeResult(OverRepresentedSeqs result) {
+	public synchronized void mergeResult(OverRepresentedSeqs result) {
 		// TODO Auto-generated method stub
 		
 	}

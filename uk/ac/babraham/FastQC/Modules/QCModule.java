@@ -26,9 +26,7 @@ import javax.swing.JPanel;
 import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 
-public interface QCModule<T> {
-	
-	public void mergeResult(T result);
+public interface QCModule {
 
 	public void processSequence(Sequence sequence);
 	

@@ -21,9 +21,8 @@ package uk.ac.babraham.FastQC.Analysis;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 
 import uk.ac.babraham.FastQC.Modules.BasicStats;
 import uk.ac.babraham.FastQC.Modules.KmerContent;
@@ -35,7 +34,7 @@ import uk.ac.babraham.FastQC.Modules.PerBaseSequenceContent;
 import uk.ac.babraham.FastQC.Modules.PerSequenceGCContent;
 import uk.ac.babraham.FastQC.Modules.PerSequenceQualityScores;
 import uk.ac.babraham.FastQC.Modules.QCModule;
-import uk.ac.babraham.FastQC.Modules.QCModule;
+import uk.ac.babraham.FastQC.Modules.QCModuleAggreg;
 import uk.ac.babraham.FastQC.Modules.SequenceLengthDistribution;
 import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.AggregFile;
@@ -47,7 +46,7 @@ public class OfflineRunner implements AnalysisListener {
 	
 	private int filesRemaining;
 	private boolean showUpdates = true;
-	private ConcurrentHashMap<Class, QCModule> aggregModuleMap; // maps the class to the module
+	private HashMap<Class, QCModuleAggreg> aggregModules; // maps the class to the module
 	
 	
 	
@@ -83,12 +82,8 @@ public class OfflineRunner implements AnalysisListener {
 		}
 		
 		if (Boolean.getBoolean("fastqc.aggreg")) {			
-			this.aggregModuleMap = new ConcurrentHashMap<Class, QCModule>();
-			QCModule[] modules = createNewQCModuleList();  // TODO:  how do we make this generic?
-			for (QCModule module: modules) {
-				//this.aggregModuleMap.put((Class<QCModule>) module.getClass(), module);  // TODO:  cast!?  we need to avoid this!
-				this.aggregModuleMap.put(PerBaseQualityScores.class, new PerBaseQualityScores());
-			}
+			this.aggregModules = new HashMap<Class, QCModuleAggreg>();	
+			this.aggregModules.put(PerBaseQualityScores.class, new PerBaseQualityScores());
 		}
 			
 		filesRemaining = fileGroups.length;
@@ -115,7 +110,7 @@ public class OfflineRunner implements AnalysisListener {
 		}
 		
 		if (Boolean.getBoolean("fastqc.aggreg") == true) {
-			this.analysisMerge(null);
+			aggregResults(null);
 		}
 		System.exit(0);
 		
@@ -137,41 +132,26 @@ public class OfflineRunner implements AnalysisListener {
 						
 		AnalysisRunner runner = new AnalysisRunner(sequenceFile);
 		runner.addAnalysisListener(this);
-				
-		QCModule [] module_list = createNewQCModuleList();
-
+		
+		OverRepresentedSeqs os = new OverRepresentedSeqs();
+		QCModule [] module_list = new QCModule [] {
+				new BasicStats(),
+				new PerBaseQualityScores(),
+				new PerSequenceQualityScores(),
+				new PerBaseSequenceContent(),
+				new PerBaseGCContent(), 
+				new PerSequenceGCContent(),
+				new NContent(),
+				new SequenceLengthDistribution(),
+				os.duplicationLevelModule(),
+				os,
+				new KmerContent()
+			};
+		
 		runner.startAnalysis(module_list);
 
 	}	
-	
-	/**
-	 * Aggregates statistics from multiple files
-	 * @param files
-	 * @throws Exception
-	 */
-	public void aggregFiles (File [] files) throws Exception {
-		for (int f=0;f<files.length;f++) {
-			if (!files[f].exists()) {
-				throw new IOException(files[f].getName()+" doesn't exist");
-			}
-		}
-		SequenceFile sequenceFile;
-		if (files.length == 1) {
-			sequenceFile = SequenceFactory.getSequenceFile(files[0]);
-		}
-		else {
-			sequenceFile = SequenceFactory.getSequenceFile(files);  // TODO:  create a group of files that aren't part of the same casava group			
-		}
-						
-		AnalysisRunner runner = new AnalysisRunner(sequenceFile);
-		runner.addAnalysisListener(this);
-				
-		QCModule [] module_list = createNewQCModuleList();
-
-		runner.startAnalysis(module_list);
-
-	}
-	
+		
 	public void analysisComplete(SequenceFile file, QCModule[] results) {
 		File reportFile;
 		
@@ -194,16 +174,12 @@ public class OfflineRunner implements AnalysisListener {
 			return;
 		}
 		
-		if (Boolean.getBoolean("fastqc.aggreg") == true) {
-//			if (results.length != this.aggregModuleMap.size()) {
-//				analysisExceptionReceived(file, new Exception("Invalid number of modules"));
-//				return;
-//			}
-			
+		if (Boolean.getBoolean("fastqc.aggreg") == true) {	
 			for (int i = 0; i < results.length; i++) {
 				QCModule result = results[i];
-				if (aggregModuleMap.containsKey(result.getClass())) {
-					aggregModuleMap.get(result.getClass()).mergeResult(result);
+				if (aggregModules.containsKey(result.getClass())) {
+					QCModuleAggreg aggregModule = aggregModules.get(result.getClass()); 
+					aggregModule.mergeResult(result);
 				}
 				
 			}
@@ -212,12 +188,14 @@ public class OfflineRunner implements AnalysisListener {
 
 	}
 	
-	
-	public void analysisMerge(String comboFileName) {
+	/**
+	 * Prints out the HTML for modules aggregated over all files
+	 * @param comboFileName
+	 */
+	public void aggregResults(String comboFileName) {
 		try {
-			
-			
-			if (showUpdates) System.out.println("Merging results for all files");
+						
+			if (showUpdates) System.out.println("Generating aggregated results for all files");
 	
 			if (comboFileName == null || comboFileName.length() == 0) {
 				comboFileName = "combo_001.fastq.gz";
@@ -235,15 +213,13 @@ public class OfflineRunner implements AnalysisListener {
 			
 			SequenceFile sequenceFile = new AggregFile(comboFile);  // TODO:  do not just use sequence file gorup, it can be bam, fastq
 	
-			new HTMLReportArchive(sequenceFile, aggregModuleMap.values().toArray(new QCModule[0]), comboFile);
+			new HTMLReportArchive(sequenceFile, aggregModules.values().toArray(new QCModule[0]), comboFile);
 		}
 		catch (Exception e) {
 			System.err.println("Failed to process file "+comboFileName);
 			e.printStackTrace();
 			return;
 		}
-		
-
 	}
 
 	public void analysisUpdated(SequenceFile file, int sequencesProcessed, int percentComplete) {
@@ -270,23 +246,6 @@ public class OfflineRunner implements AnalysisListener {
 	public void analysisStarted(SequenceFile file) {
 		if (showUpdates) System.err.println("Started analysis of "+file.name());
 		
-	}
-	
-	private QCModule [] createNewQCModuleList() {
-		OverRepresentedSeqs os = new OverRepresentedSeqs();
-		return new QCModule [] {
-			new BasicStats(),
-			new PerBaseQualityScores(),
-			new PerSequenceQualityScores(),
-			new PerBaseSequenceContent(),
-			new PerBaseGCContent(), 
-			new PerSequenceGCContent(),
-			new NContent(),
-			new SequenceLengthDistribution(),
-			os.duplicationLevelModule(),
-			os,
-			new KmerContent()
-		};
 	}
 	
 }

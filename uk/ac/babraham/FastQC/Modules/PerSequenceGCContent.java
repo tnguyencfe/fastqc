@@ -36,7 +36,7 @@ import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 import uk.ac.babraham.FastQC.Statistics.NormalDistribution;
 
-public class PerSequenceGCContent implements QCModule<PerSequenceGCContent> {
+public class PerSequenceGCContent implements QCModule, QCModuleAggreg<PerSequenceGCContent> {
 
 	private double [] gcDistribution = new double[101];
 	private double [] theoreticalDistribution  = new double[101];
@@ -266,7 +266,7 @@ public class PerSequenceGCContent implements QCModule<PerSequenceGCContent> {
 	}
 
 	@Override
-	public void mergeResult(PerSequenceGCContent result) {
+	public synchronized void mergeResult(PerSequenceGCContent result) {
 		// TODO Auto-generated method stub
 		
 	}

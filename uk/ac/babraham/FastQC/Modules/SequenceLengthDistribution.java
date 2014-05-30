@@ -32,7 +32,7 @@ import uk.ac.babraham.FastQC.Graphs.LineGraph;
 import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 
-public class SequenceLengthDistribution implements QCModule<SequenceLengthDistribution> {
+public class SequenceLengthDistribution implements QCModule, QCModuleAggreg<SequenceLengthDistribution> {
 
 	private long [] lengthCounts = new long[0];
 	private double [] graphCounts = null;
@@ -237,7 +237,7 @@ public class SequenceLengthDistribution implements QCModule<SequenceLengthDistri
 	}
 
 	@Override
-	public void mergeResult(SequenceLengthDistribution result) {
+	public synchronized void mergeResult(SequenceLengthDistribution result) {
 		// TODO Auto-generated method stub
 		
 	}

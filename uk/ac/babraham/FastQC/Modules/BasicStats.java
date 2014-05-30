@@ -32,7 +32,7 @@ import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 import uk.ac.babraham.FastQC.Sequence.QualityEncoding.PhredEncoding;
 
-public class BasicStats implements QCModule<BasicStats> {
+public class BasicStats implements QCModule, QCModuleAggreg<BasicStats>{
 
 	private String name = null;
 	private int actualCount = 0;
@@ -249,9 +249,21 @@ public class BasicStats implements QCModule<BasicStats> {
 	}
 
 	@Override
-	public void mergeResult(BasicStats result) {
-		// TODO Auto-generated method stub
-		
+	public synchronized void mergeResult(BasicStats result) {
+		//TODO:  set name
+		filteredCount += result.filteredCount;		
+		actualCount += result.actualCount;
+		minLength = Math.min(minLength, result.minLength);
+		maxLength = Math.max(maxLength, result.maxLength);
+		gCount += result.gCount;
+		aCount += result.aCount;
+		tCount += result.tCount;
+		cCount += result.cCount;
+		nCount += result.nCount;
+		if (Character.compare(lowestChar, result.lowestChar) < 0)
+		{
+			lowestChar = result.lowestChar;
+		}		
 	}
 	
 

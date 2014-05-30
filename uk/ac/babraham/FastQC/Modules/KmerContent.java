@@ -44,7 +44,7 @@ import uk.ac.babraham.FastQC.Graphs.LineGraph;
 import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 
-public class KmerContent implements QCModule<KmerContent> {
+public class KmerContent implements QCModule, QCModuleAggreg<KmerContent> {
 
 	private Hashtable<String, Kmer> kmers = new Hashtable<String, Kmer>((int)Math.pow(4, MAX_KMER_SIZE));
 	private long gCount = 0;
@@ -448,6 +448,21 @@ public class KmerContent implements QCModule<KmerContent> {
 			
 		}
 		
+		public void incrementCount (int position, int incrementBy) {
+			count += incrementBy;
+			
+			if (position >= positions.length) {
+				long [] newPositions = new long[position+1];
+				for (int i=0;i<positions.length;i++) {
+					newPositions[i] = positions[i];
+				}
+				positions = newPositions;
+			}
+			
+			++positions[position];
+			
+		}
+		
 		public long [] getPositions () {
 			return positions;
 		}
@@ -562,8 +577,55 @@ public class KmerContent implements QCModule<KmerContent> {
 	}
 
 	@Override
-	public void mergeResult(KmerContent result) {
-		// TODO Auto-generated method stub
+	public synchronized void mergeResult(KmerContent result) {
+		longestSequence = Math.max(longestSequence, result.longestSequence);
+		gCount += result.gCount;
+		aCount += result.aCount;
+		tCount += result.tCount;
+		cCount += result.cCount;
+		
+		
+		if (totalKmerCounts.length < result.totalKmerCounts.length) {
+			// We need to expand the array
+			long [][] newCounts = new long[result.totalKmerCounts.length][MAX_KMER_SIZE]; //[position][kmer length]
+			for (int i = 0; i < totalKmerCounts.length; i++) {
+				newCounts[i] = Arrays.copyOf(totalKmerCounts[i], totalKmerCounts[i].length);
+			}
+			totalKmerCounts = newCounts;
+		}
+		for (int position=0; position < result.totalKmerCounts.length;position++) {
+			for (int kmerLen=0; kmerLen < MAX_KMER_SIZE; kmerLen++) {			
+				totalKmerCounts[position][kmerLen] += result.totalKmerCounts[position][kmerLen];
+			}			
+		}
+		
+		for (String kmerStr : kmers.keySet()) {
+			Kmer kmer =  kmers.get(kmerStr);
+			kmer.getPositions();
+		}
+		
+		// Now we go through all of the Kmers to count these
+		for (int kmerSize=MIN_KMER_SIZE;kmerSize<=MAX_KMER_SIZE;kmerSize++) {
+			for (int i=0;i<=seq.length-kmerSize;i++) {
+				
+				String kmer = sequence.getSequence().substring(i, i+kmerSize);
+				
+				// Add to the counts before skipping Kmers containing Ns (see
+				// explanation in addKmerCount for the reasoning).
+				addKmerCount(i, kmerSize, kmer);
+				
+				// Skip Kmers containing N
+				if (kmer.indexOf("N") >=0) continue;
+
+				if (kmers.containsKey(kmer)) {
+					kmers.get(kmer).incrementCount(i);
+				}
+				else {
+					kmers.put(kmer, new Kmer(kmer,i,(seq.length-kmerSize)+1));
+				}
+
+			}
+		}
 		
 	}
 

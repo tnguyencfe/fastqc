@@ -35,7 +35,7 @@ import uk.ac.babraham.FastQC.Report.HTMLReportArchive;
 import uk.ac.babraham.FastQC.Sequence.Sequence;
 import uk.ac.babraham.FastQC.Sequence.QualityEncoding.PhredEncoding;
 
-public class PerSequenceQualityScores implements QCModule<PerSequenceQualityScores> {
+public class PerSequenceQualityScores implements QCModule, QCModuleAggreg<PerSequenceQualityScores> {
 
 	private HashMap<Integer, Long> averageScoreCounts = new HashMap<Integer, Long>();
 	private double [] qualityDistribution = null;
@@ -174,7 +174,7 @@ public class PerSequenceQualityScores implements QCModule<PerSequenceQualityScor
 
 
 	@Override
-	public void mergeResult(PerSequenceQualityScores result) {
+	public synchronized void mergeResult(PerSequenceQualityScores result) {
 		// TODO Auto-generated method stub
 		
 	}
