@@ -320,8 +320,23 @@ public class OverRepresentedSeqs implements QCModule, QCModuleAggreg<OverReprese
 
 	@Override
 	public synchronized void mergeResult(OverRepresentedSeqs result) {
-		// TODO Auto-generated method stub
+		count += result.count;
+
+		for (String sequence : result.sequences.keySet()) {
+			Integer resultSeqCount = result.sequences.get(sequence);
+			if (!sequences.containsKey(sequence)) {
+				sequences.put(sequence, resultSeqCount);
+			}
+			else {
+				sequences.put(sequence, sequences.get(sequence) + resultSeqCount);
+			}
+		}
+		uniqueSequenceCount += result.uniqueSequenceCount;
+		countAtUniqueLimit += result.countAtUniqueLimit;  //TODO:  verify the logic for this
 		
+		if (uniqueSequenceCount >= OBSERVATION_CUTOFF) {
+			frozen = true;
+		}
 	}
 
 }

@@ -22,6 +22,7 @@ package uk.ac.babraham.FastQC.Modules;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -186,8 +187,20 @@ public class PerBaseGCContent implements QCModule, QCModuleAggreg<PerBaseGCConte
 
 	@Override
 	public synchronized void mergeResult(PerBaseGCContent result) {
-		// TODO Auto-generated method stub
 		
+		if (gcCounts.length < result.gcCounts.length) {
+			gcCounts = Arrays.copyOf(gcCounts, result.gcCounts.length);
+		}
+		for (int i=0; i < result.gcCounts.length; i++) {
+			gcCounts[i] += result.gcCounts[i];
+		}
+		
+		if (atCounts.length < result.atCounts.length) {
+			atCounts = Arrays.copyOf(atCounts, result.atCounts.length);
+		}
+		for (int i=0; i < result.atCounts.length; i++) {
+			atCounts[i] += result.atCounts[i];
+		}
 	} 
 
 }

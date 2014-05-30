@@ -19,6 +19,8 @@
  */
 package uk.ac.babraham.FastQC.Modules.GCModel;
 
+import java.util.Arrays;
+
 public class GCModel {
 	
 	public int readLength;
@@ -75,8 +77,28 @@ public class GCModel {
 		
 	}
 	
+	/**
+	 * Empty constructor used in cloning
+	 */
+	private GCModel() {
+		
+	}
+	
 	public GCModelValue [] getModelValues (int gcCount) {
 		return models[gcCount];
 	}
 	
+	/**
+	 * Deep copy
+	 */
+	@Override
+	public GCModel clone() {
+		GCModel newModel = new GCModel();
+		newModel.readLength = this.readLength;
+		newModel.models = new GCModelValue[this.models.length][];
+		for (int i = 0; i < this.models.length; i++) {
+			newModel.models[i] = Arrays.copyOf(this.models[i], this.models.length);
+		}
+		return newModel;
+	}
 }

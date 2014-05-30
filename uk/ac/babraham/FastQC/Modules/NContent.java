@@ -22,6 +22,7 @@ package uk.ac.babraham.FastQC.Modules;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -173,8 +174,20 @@ public class NContent implements QCModule, QCModuleAggreg<NContent>{
 
 	@Override
 	public synchronized void mergeResult(NContent result) {
-		// TODO Auto-generated method stub
+
+		if (nCounts.length < result.nCounts.length) {
+			nCounts = Arrays.copyOf(nCounts, result.nCounts.length);  //resize array
+		}
+		for (int i=0; i<result.nCounts.length; i++) {
+			nCounts[i] += result.nCounts[i];
+		}
 		
+		if (notNCounts.length < result.notNCounts.length) {
+			notNCounts = Arrays.copyOf(notNCounts, result.notNCounts.length);  //resize array
+		}
+		for (int i=0; i<result.notNCounts.length; i++) {
+			notNCounts[i] += result.notNCounts[i];
+		}
 	}
 
 }

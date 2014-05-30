@@ -197,12 +197,7 @@ public class DuplicationLevel implements QCModule, QCModuleAggreg<DuplicationLev
 
 	@Override
 	public synchronized void mergeResult(DuplicationLevel result) {
-		//TODO:  handle counts
-		maxCount = Math.max(maxCount, result.maxCount)
-		
-		//private double [] counts = null;
-		
-		
+		//no-op.  Handled by OverRepresentedSeq
 	}
 
 }

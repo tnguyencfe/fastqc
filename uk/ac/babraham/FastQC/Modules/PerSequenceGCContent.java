@@ -22,6 +22,7 @@ package uk.ac.babraham.FastQC.Modules;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -267,7 +268,19 @@ public class PerSequenceGCContent implements QCModule, QCModuleAggreg<PerSequenc
 
 	@Override
 	public synchronized void mergeResult(PerSequenceGCContent result) {
-		// TODO Auto-generated method stub
-		
+
+		for (Integer seqLen : result.cachedModels.keySet()) {
+			GCModel resultGCModel = result.cachedModels.get(seqLen);
+			if (! cachedModels.containsKey(seqLen)) {
+				cachedModels.put(seqLen, resultGCModel.clone()); 
+			}	
+		}
+
+		if (gcDistribution.length < result.gcDistribution.length) {
+			gcDistribution = Arrays.copyOf(gcDistribution, result.gcDistribution.length);
+		}
+		for (int gcPerc=0; gcPerc<gcDistribution.length; gcPerc++) {
+			gcDistribution[gcPerc] += result.gcDistribution[gcPerc];
+		}	
 	}
 }

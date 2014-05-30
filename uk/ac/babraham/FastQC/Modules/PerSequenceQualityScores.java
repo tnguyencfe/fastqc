@@ -175,7 +175,17 @@ public class PerSequenceQualityScores implements QCModule, QCModuleAggreg<PerSeq
 
 	@Override
 	public synchronized void mergeResult(PerSequenceQualityScores result) {
-		// TODO Auto-generated method stub
+		
+		for (Integer aveScore : result.averageScoreCounts.keySet()) {
+			Long resultAveScoreCount = result.averageScoreCounts.get(aveScore);
+			if (!averageScoreCounts.containsKey(aveScore)) {
+				averageScoreCounts.put(aveScore, resultAveScoreCount);
+			}
+			else {
+				averageScoreCounts.put(aveScore, result.averageScoreCounts.get(aveScore) + resultAveScoreCount);
+			}
+				
+		}	
 		
 	}
 

@@ -22,6 +22,7 @@ package uk.ac.babraham.FastQC.Modules;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -232,8 +233,33 @@ public class PerBaseSequenceContent implements QCModule, QCModuleAggreg<PerBaseS
 
 	@Override
 	public synchronized void mergeResult(PerBaseSequenceContent result) {
-		// TODO Auto-generated method stub
+		if (gCounts.length < result.gCounts.length) {
+			gCounts = Arrays.copyOf(gCounts, result.gCounts.length);
+		}
+		for (int i = 0; i < result.gCounts.length; i++) {
+			gCounts[i] += result.gCounts[i];
+		}
 		
+		if (aCounts.length < result.aCounts.length) {
+			aCounts = Arrays.copyOf(aCounts, result.aCounts.length);
+		}
+		for (int i = 0; i < result.aCounts.length; i++) {
+			aCounts[i] += result.aCounts[i];
+		}
+		
+		if (tCounts.length < result.tCounts.length) {
+			tCounts = Arrays.copyOf(tCounts, result.tCounts.length);
+		}
+		for (int i = 0; i < result.tCounts.length; i++) {
+			tCounts[i] += result.tCounts[i];
+		}
+		
+		if (cCounts.length < result.cCounts.length) {
+			cCounts = Arrays.copyOf(cCounts, result.cCounts.length);
+		}
+		for (int i = 0; i < result.cCounts.length; i++) {
+			cCounts[i] += result.cCounts[i];
+		}
 	} 
 
 }

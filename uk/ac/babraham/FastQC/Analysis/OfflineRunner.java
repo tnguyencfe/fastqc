@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import uk.ac.babraham.FastQC.Modules.BasicStats;
+import uk.ac.babraham.FastQC.Modules.DuplicationLevel;
 import uk.ac.babraham.FastQC.Modules.KmerContent;
 import uk.ac.babraham.FastQC.Modules.NContent;
 import uk.ac.babraham.FastQC.Modules.OverRepresentedSeqs;
@@ -83,7 +84,18 @@ public class OfflineRunner implements AnalysisListener {
 		
 		if (Boolean.getBoolean("fastqc.aggreg")) {			
 			this.aggregModules = new HashMap<Class, QCModuleAggreg>();	
+			OverRepresentedSeqs os = new OverRepresentedSeqs();
+			this.aggregModules.put(BasicStats.class, new BasicStats());
 			this.aggregModules.put(PerBaseQualityScores.class, new PerBaseQualityScores());
+			this.aggregModules.put(PerSequenceQualityScores.class, new PerSequenceQualityScores());
+			this.aggregModules.put(PerBaseSequenceContent.class, new PerBaseSequenceContent());
+			this.aggregModules.put(PerBaseGCContent.class, new PerBaseGCContent());
+			this.aggregModules.put(PerSequenceGCContent.class, new PerSequenceGCContent());
+			this.aggregModules.put(NContent.class, new NContent());
+			this.aggregModules.put(SequenceLengthDistribution.class, new SequenceLengthDistribution());
+			this.aggregModules.put(DuplicationLevel.class, os.duplicationLevelModule());
+			this.aggregModules.put(OverRepresentedSeqs.class, os);
+			this.aggregModules.put(KmerContent.class, new KmerContent());
 		}
 			
 		filesRemaining = fileGroups.length;

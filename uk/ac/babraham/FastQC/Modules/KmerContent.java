@@ -433,6 +433,12 @@ public class KmerContent implements QCModule, QCModuleAggreg<KmerContent> {
 			++positions[position];
 		}
 		
+		private Kmer(String sequence, int seqLength) {
+			char [] chars = sequence.toCharArray();
+			this.sequence = new String(chars);
+			positions = new long[seqLength];
+		}
+		
 		public void incrementCount (int position) {
 			++count;
 			
@@ -448,20 +454,35 @@ public class KmerContent implements QCModule, QCModuleAggreg<KmerContent> {
 			
 		}
 		
-		public void incrementCount (int position, int incrementBy) {
+		/**
+		 * Increment kmer count at specific position
+		 * @param position  position in sequence
+		 * @param incrementBy  number of times kmer found at this position
+		 */
+		public void incrementCount(int position, long incrementBy) {
 			count += incrementBy;
 			
-			if (position >= positions.length) {
-				long [] newPositions = new long[position+1];
-				for (int i=0;i<positions.length;i++) {
-					newPositions[i] = positions[i];
-				}
-				positions = newPositions;
+			if (position >= positions.length) {				
+				positions = Arrays.copyOf(positions, position+1);
 			}
 			
-			++positions[position];
-			
+			positions[position] += incrementBy;
 		}
+		
+		@Override
+		/**
+		 * Full deep copy
+		 */
+		public Kmer clone() {
+			Kmer newKmer = new Kmer(this.sequence, this.positions.length);
+			newKmer.positions  = Arrays.copyOf(this.positions, this.positions.length);
+			newKmer.count = this.count;
+			newKmer.obsExp = this.obsExp;
+			newKmer.obsExpPositions = Arrays.copyOf(this.obsExpPositions, this.obsExpPositions.length);
+			return newKmer;			
+		}
+		
+		
 		
 		public long [] getPositions () {
 			return positions;
@@ -599,31 +620,19 @@ public class KmerContent implements QCModule, QCModuleAggreg<KmerContent> {
 			}			
 		}
 		
-		for (String kmerStr : kmers.keySet()) {
-			Kmer kmer =  kmers.get(kmerStr);
-			kmer.getPositions();
-		}
-		
-		// Now we go through all of the Kmers to count these
-		for (int kmerSize=MIN_KMER_SIZE;kmerSize<=MAX_KMER_SIZE;kmerSize++) {
-			for (int i=0;i<=seq.length-kmerSize;i++) {
-				
-				String kmer = sequence.getSequence().substring(i, i+kmerSize);
-				
-				// Add to the counts before skipping Kmers containing Ns (see
-				// explanation in addKmerCount for the reasoning).
-				addKmerCount(i, kmerSize, kmer);
-				
-				// Skip Kmers containing N
-				if (kmer.indexOf("N") >=0) continue;
-
-				if (kmers.containsKey(kmer)) {
-					kmers.get(kmer).incrementCount(i);
+		for (String kmerStr : result.kmers.keySet()) {
+			Kmer resultKmer =  result.kmers.get(kmerStr);
+			Kmer kmer;
+			if (!kmers.containsKey(kmerStr)) {
+				kmer = resultKmer.clone();
+				kmers.put(kmerStr, kmer);
+			}
+			else {
+				kmer = kmers.get(kmerStr);
+				long[] resultPositions = resultKmer.getPositions();
+				for (int position = 0; position < resultPositions.length; position++) {
+					kmer.incrementCount(position, resultPositions[position]);
 				}
-				else {
-					kmers.put(kmer, new Kmer(kmer,i,(seq.length-kmerSize)+1));
-				}
-
 			}
 		}
 		

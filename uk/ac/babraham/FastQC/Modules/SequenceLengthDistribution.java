@@ -22,6 +22,7 @@ package uk.ac.babraham.FastQC.Modules;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -238,7 +239,12 @@ public class SequenceLengthDistribution implements QCModule, QCModuleAggreg<Sequ
 
 	@Override
 	public synchronized void mergeResult(SequenceLengthDistribution result) {
-		// TODO Auto-generated method stub
+		if (lengthCounts.length < result.lengthCounts.length) {
+			lengthCounts = Arrays.copyOf(lengthCounts, result.lengthCounts.length);
+		}
+		for (int i = 0; i < result.lengthCounts.length; i++) {
+			lengthCounts[i] += result.lengthCounts[i];
+		}
 		
 	}
 
