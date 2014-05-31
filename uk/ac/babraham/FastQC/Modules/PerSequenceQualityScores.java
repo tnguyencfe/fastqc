@@ -185,8 +185,10 @@ public class PerSequenceQualityScores implements QCModule, QCModuleAggreg<PerSeq
 				averageScoreCounts.put(aveScore, result.averageScoreCounts.get(aveScore) + resultAveScoreCount);
 			}
 				
-		}	
-		
+		}
+		if (result.lowestChar < lowestChar) {
+			lowestChar = result.lowestChar;
+		}		
 	}
 
 }

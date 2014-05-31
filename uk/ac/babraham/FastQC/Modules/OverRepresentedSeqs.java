@@ -120,7 +120,7 @@ public class OverRepresentedSeqs implements QCModule, QCModuleAggreg<OverReprese
 		overrepresntedSeqs = keepers.toArray(new OverrepresentedSeq[0]);
 		Arrays.sort(overrepresntedSeqs);
 		calculated  = true;
-		sequences.clear();
+		//sequences.clear();
 		
 	}
 	
@@ -318,11 +318,15 @@ public class OverRepresentedSeqs implements QCModule, QCModuleAggreg<OverReprese
 		}	
 	}
 
+	/**
+	 * Merge OverRepresentedSeqs count.
+	 * When merging, we do not obey the observation cutoff. 
+	 */
 	@Override
 	public synchronized void mergeResult(OverRepresentedSeqs result) {
 		count += result.count;
 
-		for (String sequence : result.sequences.keySet()) {
+		for (String sequence : result.sequences.keySet()) { //TODO:  this gets cleared afyer calling getOverRepresentedSEquences().  Need to not clear it or get actual over rep seq somehow.
 			Integer resultSeqCount = result.sequences.get(sequence);
 			if (!sequences.containsKey(sequence)) {
 				sequences.put(sequence, resultSeqCount);
@@ -331,12 +335,8 @@ public class OverRepresentedSeqs implements QCModule, QCModuleAggreg<OverReprese
 				sequences.put(sequence, sequences.get(sequence) + resultSeqCount);
 			}
 		}
-		uniqueSequenceCount += result.uniqueSequenceCount;
-		countAtUniqueLimit += result.countAtUniqueLimit;  //TODO:  verify the logic for this
-		
-		if (uniqueSequenceCount >= OBSERVATION_CUTOFF) {
-			frozen = true;
-		}
+		uniqueSequenceCount += sequences.size();
+		countAtUniqueLimit = count;
 	}
 
 }

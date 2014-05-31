@@ -250,18 +250,22 @@ public class BasicStats implements QCModule, QCModuleAggreg<BasicStats>{
 
 	@Override
 	public synchronized void mergeResult(BasicStats result) {
-		//TODO:  set name
-		filteredCount += result.filteredCount;		
-		actualCount += result.actualCount;
-		minLength = Math.min(minLength, result.minLength);
+		if (actualCount == 0) {
+			minLength = result.minLength;
+		}
+		else {
+			minLength = Math.min(minLength, result.minLength);
+		}
 		maxLength = Math.max(maxLength, result.maxLength);
+		filteredCount += result.filteredCount;		
+		actualCount += result.actualCount;		
 		gCount += result.gCount;
 		aCount += result.aCount;
 		tCount += result.tCount;
 		cCount += result.cCount;
 		nCount += result.nCount;
-		if (Character.compare(lowestChar, result.lowestChar) < 0)
-		{
+		if (result.lowestChar < this.lowestChar) {
+			
 			lowestChar = result.lowestChar;
 		}		
 	}

@@ -22,6 +22,7 @@ package uk.ac.babraham.FastQC.Analysis;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Vector;
 
 import uk.ac.babraham.FastQC.Modules.BasicStats;
@@ -47,7 +48,7 @@ public class OfflineRunner implements AnalysisListener {
 	
 	private int filesRemaining;
 	private boolean showUpdates = true;
-	private HashMap<Class, QCModuleAggreg> aggregModules; // maps the class to the module
+	private LinkedHashMap<Class, QCModuleAggreg> aggregModules; // maps the class to the module
 	
 	
 	
@@ -82,20 +83,12 @@ public class OfflineRunner implements AnalysisListener {
 			}
 		}
 		
-		if (Boolean.getBoolean("fastqc.aggreg")) {			
-			this.aggregModules = new HashMap<Class, QCModuleAggreg>();	
-			OverRepresentedSeqs os = new OverRepresentedSeqs();
-			this.aggregModules.put(BasicStats.class, new BasicStats());
-			this.aggregModules.put(PerBaseQualityScores.class, new PerBaseQualityScores());
-			this.aggregModules.put(PerSequenceQualityScores.class, new PerSequenceQualityScores());
-			this.aggregModules.put(PerBaseSequenceContent.class, new PerBaseSequenceContent());
-			this.aggregModules.put(PerBaseGCContent.class, new PerBaseGCContent());
-			this.aggregModules.put(PerSequenceGCContent.class, new PerSequenceGCContent());
-			this.aggregModules.put(NContent.class, new NContent());
-			this.aggregModules.put(SequenceLengthDistribution.class, new SequenceLengthDistribution());
-			this.aggregModules.put(DuplicationLevel.class, os.duplicationLevelModule());
-			this.aggregModules.put(OverRepresentedSeqs.class, os);
-			this.aggregModules.put(KmerContent.class, new KmerContent());
+		if (Boolean.getBoolean("fastqc.aggreg")) {
+			QCModuleAggreg[] modules = createQCModules();
+			this.aggregModules = new LinkedHashMap<Class, QCModuleAggreg>(modules.length);			
+			for (QCModuleAggreg module : modules) {
+				this.aggregModules.put(module.getClass(), module);
+			}	
 		}
 			
 		filesRemaining = fileGroups.length;
@@ -122,7 +115,8 @@ public class OfflineRunner implements AnalysisListener {
 		}
 		
 		if (Boolean.getBoolean("fastqc.aggreg") == true) {
-			aggregResults(null);
+			String aggregFileName = System.getProperty("fastqc.aggreg.file");
+			aggregResults(aggregFileName);
 		}
 		System.exit(0);
 		
@@ -146,7 +140,7 @@ public class OfflineRunner implements AnalysisListener {
 		runner.addAnalysisListener(this);
 		
 		OverRepresentedSeqs os = new OverRepresentedSeqs();
-		QCModule [] module_list = new QCModule [] {
+		QCModule [] module_list = new QCModule [] { //TODO:  clean this up
 				new BasicStats(),
 				new PerBaseQualityScores(),
 				new PerSequenceQualityScores(),
@@ -215,17 +209,17 @@ public class OfflineRunner implements AnalysisListener {
 			File comboFile = new File(comboFileName);		
 			
 			if (System.getProperty("fastqc.output_dir") != null) {
-				String fileName = comboFileName.replaceAll(".gz$","").replaceAll(".bz2$","").replaceAll(".txt$","").replaceAll(".fastq$", "").replaceAll(".sam$", "").replaceAll(".bam$", "")+"_fastqc.zip";
-				comboFile = new File(System.getProperty("fastqc.output_dir")+"/"+fileName);						
+				String fileName = comboFileName + "_fastqc.zip"; //TODO:  cleaner
+				comboFile = new File(System.getProperty("fastqc.output_dir")+ File.separator+fileName);						
 			}
 			else {
 				
-				comboFile = new File(comboFile.getAbsolutePath().replaceAll(".gz$","").replaceAll(".bz2$","").replaceAll(".txt$","").replaceAll(".fastq$", "").replaceAll(".sam$", "").replaceAll(".bam$", "")+"_fastqc.zip");			
+				comboFile = new File(comboFile.getAbsolutePath() + "_fastqc.zip");			
 			}
 			
 			SequenceFile sequenceFile = new AggregFile(comboFile);  // TODO:  do not just use sequence file gorup, it can be bam, fastq
 	
-			new HTMLReportArchive(sequenceFile, aggregModules.values().toArray(new QCModule[0]), comboFile);
+			new HTMLReportArchive(sequenceFile, aggregModules.values().toArray(new QCModule[0]), comboFile); //TODO: order this so that it's in the same order each time
 		}
 		catch (Exception e) {
 			System.err.println("Failed to process file "+comboFileName);
@@ -259,5 +253,26 @@ public class OfflineRunner implements AnalysisListener {
 		if (showUpdates) System.err.println("Started analysis of "+file.name());
 		
 	}
-	
+
+	/**
+	 * Convenience method to create array of QCModuleAggregs in a defined order.
+	 * @return
+	 */
+	private QCModuleAggreg[] createQCModules() {
+		OverRepresentedSeqs os = new OverRepresentedSeqs();
+		QCModuleAggreg [] module_list = new QCModuleAggreg [] {
+			new BasicStats(),
+			new PerBaseQualityScores(),
+			new PerSequenceQualityScores(),
+			new PerBaseSequenceContent(),
+			new PerBaseGCContent(), 
+			new PerSequenceGCContent(),
+			new NContent(),
+			new SequenceLengthDistribution(),
+			os.duplicationLevelModule(),
+			os,
+			new KmerContent()
+		};
+		return module_list;
+	}
 }
