@@ -120,7 +120,7 @@ public class OverRepresentedSeqs implements QCModule, QCModuleAggreg<OverReprese
 		overrepresntedSeqs = keepers.toArray(new OverrepresentedSeq[0]);
 		Arrays.sort(overrepresntedSeqs);
 		calculated  = true;
-		//sequences.clear();
+		// Do not clear the sequences hash so that it can be merged with the sequences hash from another sequence file.
 		
 	}
 	
@@ -326,7 +326,7 @@ public class OverRepresentedSeqs implements QCModule, QCModuleAggreg<OverReprese
 	public synchronized void mergeResult(OverRepresentedSeqs result) {
 		count += result.count;
 
-		for (String sequence : result.sequences.keySet()) { //TODO:  this gets cleared afyer calling getOverRepresentedSEquences().  Need to not clear it or get actual over rep seq somehow.
+		for (String sequence : result.sequences.keySet()) {
 			Integer resultSeqCount = result.sequences.get(sequence);
 			if (!sequences.containsKey(sequence)) {
 				sequences.put(sequence, resultSeqCount);

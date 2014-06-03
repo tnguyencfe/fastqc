@@ -47,6 +47,15 @@ public class BasicStats implements QCModule, QCModuleAggreg<BasicStats>{
 	private char lowestChar = 126;
 	private String fileType = null;
 	
+	public BasicStats() {
+		// default constructor
+	}
+	
+	public BasicStats(String filename, String fileType) {
+		this.name = filename;
+		this.fileType = fileType;
+	}
+	
 	public String description() {
 		return "Calculates some basic statistics about the file";
 	}
@@ -80,7 +89,7 @@ public class BasicStats implements QCModule, QCModuleAggreg<BasicStats>{
 	public String name() {
 		return "Basic Statistics";
 	}
-
+	
 	public void processSequence(Sequence sequence) {
 
 		if (name == null) name = sequence.file().name();

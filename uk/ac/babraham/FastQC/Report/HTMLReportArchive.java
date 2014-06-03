@@ -46,11 +46,36 @@ public class HTMLReportArchive {
 	private QCModule [] modules;
 	private ZipOutputStream zip;
 	private SequenceFile sequenceFile;
+	private String seqFileName;
 	private byte [] buffer = new byte[1024];
 	private File file;
 	
 	public HTMLReportArchive (SequenceFile sequenceFile, QCModule [] modules, File file) throws IOException {
 		this.sequenceFile = sequenceFile;
+		init(sequenceFile.name(),modules, file);
+	}
+	
+	/**
+	 * Generates HTML report zipfile
+	 * @param seqFileName Name of sequence file that was analyzed.
+	 * @param modules Analysis results
+	 * @param file zipfile to create
+	 * @throws IOException
+	 */
+	public HTMLReportArchive (String seqFileName, QCModule [] modules, File file) throws IOException {		
+		init(seqFileName, modules, file);
+	}
+
+	/**
+	 * Init member variables and start HTML doc.
+	 * @param seqFileName
+	 * @param modules
+	 * @param file
+	 * @throws IOException
+	 */
+	private void init(String seqFileName, QCModule [] modules, File file) throws IOException{
+			
+		this.seqFileName = seqFileName;				
 		this.modules = modules;
 		this.file = file;
 		zip = new ZipOutputStream(new FileOutputStream(file));
@@ -109,10 +134,7 @@ public class HTMLReportArchive {
 		if (System.getProperty("fastqc.unzip").equals("true")) {
 			unzipZipFile(file);
 		}
-		
-		
 	}
-	
 	private void unzipZipFile (File file) throws IOException {
 		ZipFile zipFile = new ZipFile(file);
 		Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -183,7 +205,7 @@ public class HTMLReportArchive {
 		
 
 		SimpleDateFormat df = new SimpleDateFormat("EEE d MMM yyyy");
-		addTemplate(sequenceFile.name(),df.format(new Date()));
+		addTemplate(seqFileName,df.format(new Date()));
 
 		html.append("<h2>Summary</h2>\n<ul>\n");
 		
@@ -207,7 +229,7 @@ public class HTMLReportArchive {
 			summaryText.append("\t");
 			summaryText.append(modules[m].name());
 			summaryText.append("\t");
-			summaryText.append(sequenceFile.name());
+			summaryText.append(seqFileName);
 			summaryText.append(System.getProperty("line.separator"));
 			
 			html.append("<a href=\"#M");
