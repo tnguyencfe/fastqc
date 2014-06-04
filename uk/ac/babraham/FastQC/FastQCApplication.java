@@ -20,8 +20,11 @@
 package uk.ac.babraham.FastQC;
 
 import java.awt.BorderLayout;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -294,7 +297,34 @@ public class FastQCApplication extends JFrame {
 			System.exit(0);
 		}
 		
-		if (args.length > 0) {
+		String inputListFilename = System.getProperty("fastqc.input");
+		if (inputListFilename != null && inputListFilename.trim().length() > 0) {
+			File inputsFile = new File (inputListFilename);
+			if (!inputsFile.exists()) {
+				System.out.println("Error.  File given for -Dfastqc.input does not exist");
+				System.exit(1);
+			}
+			
+			ArrayList<String> listInput = new ArrayList<String>();
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(inputsFile));
+				
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					listInput.add(line.trim());
+				}
+				br.close();
+			}
+			catch(IOException ex) {
+				System.out.println("Error while parsing file given in -Dfastqc.input");
+				ex.printStackTrace();
+				System.exit(1);
+			}
+			
+			new OfflineRunner(listInput.toArray(new  String[0]));
+			System.exit(0);
+		}		
+		else if (args.length > 0) {
 			// Set headless to true so we don't get problems
 			// with people working without an X display.
 			System.setProperty("java.awt.headless", "true");
@@ -305,10 +335,10 @@ public class FastQCApplication extends JFrame {
 				System.setProperty("fastqc.unzip", "true");
 			}
 			
+			
 			new OfflineRunner(args);
 			System.exit(0);
-		}
-		
+		}		
 		else {
 			try {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
